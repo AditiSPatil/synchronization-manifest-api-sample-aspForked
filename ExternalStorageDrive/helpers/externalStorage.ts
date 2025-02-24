@@ -44,27 +44,46 @@ export const getSharePointStorageItems = async () => {
     "Content-Type": "application/json",
   };
 
-  console.log(accessObject); //asp
-  const requestUrl =
-    "https://graph.microsoft.com/v1.0/sites/bentley.sharepoint.com,e809a1f6-23de-4991-abc0-a2db14119a1f,dfe70037-c4e8-4df5-9d38-ae22e07fe948/drives"; //"https://graph.microsoft.com/v1.0/me/drive";
+  const siteId = process.env.SHAREPOINT_SITE_ID!;
+  const requestUrl = `https://graph.microsoft.com/v1.0/sites/${siteId}/drives`;
   const drivesResponse = await fetch(requestUrl, {
     method: "GET",
     headers: requestHeaders,
   });
 
-  const drives = await drivesResponse.json();
-  console.log(drives);
-  const driveId = drives.value[0].id as string;
-  console.log("asp", drives.value[0].id);
-  console.log(driveId);
+  let driveId: string = "";
+  if (drivesResponse.ok) {
+    const drivesData = await drivesResponse.json();
+    //console.log("Drives fetched successfully:", drivesData);
+    const drive = drivesData.value.find(
+      (drive: any) =>
+        drive.name == "Documents" && drive.driveType === "documentLibrary"
+    );
+
+    if (drive) {
+      driveId = drive.id;
+      console.log(
+        "First drive with name containing 'document' and driveType 'documentLibrary':",
+        drive.name
+      );
+    } else {
+      console.log("No drive found with the specified criteria.");
+    }
+  } else {
+    console.error("Failed to fetch drives:", drivesResponse.statusText);
+  }
+
+  if (!driveId) {
+    console.log("Drive ID is empty, returning empty response.");
+    return [];
+  }
   const items = await fetch(
-    "	https://graph.microsoft.com/v1.0/drives/b!9qEJ6N4jkUmrwKLbFBGaHzcA59_oxPVNnTiuIuB_6UgG9XnrDIwiRoYhrjdEWGDJ/items/01IHA6PSCGXUFOWYD5IBFZFA33XAYESA5U/children", //basic working`https://graph.microsoft.com/v1.0/sites/e809a1f6-23de-4991-abc0-a2db14119a1f/drive/root/children`, //original `https://graph.microsoft.com/v1.0/drives/${driveId}/root/children`,
+    `https://graph.microsoft.com/v1.0/drives/${driveId}/root/children`,
     {
       method: "GET",
       headers: requestHeaders,
     }
   );
-  console.log(items);
   const result = await items.json();
 
   return result.value.map((item: any) => {

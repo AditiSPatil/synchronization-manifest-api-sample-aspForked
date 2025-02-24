@@ -36,6 +36,7 @@ Please make sure to follow these steps for running this code sample application:
     AAD_ENDPOINT = https://login.microsoftonline.com/  // Standard for all SharePoint storages
     GRAPH_ENDPOINT = https://graph.microsoft.com/      // Standard for all SharePoint storages
     STORAGE_TYPE = SharePoint                          // Standard for all SharePoint storages
+    SHAREPOINT_SITE_ID = <site id>                     // `SITE_ID` is the unique identifier of the sharepoint site whitelisted against CLIENT_ID wtih Site.Selected permissions
     ```
 
     Create a new application secret:
